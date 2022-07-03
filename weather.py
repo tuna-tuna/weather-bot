@@ -1,6 +1,5 @@
 import discord
 import aiohttp
-import ssl
 
 class Weather():
     def __init__(self) -> None:
@@ -20,6 +19,10 @@ class Weather():
         forecasts = []
         for dayForecast in data['forecasts']:
             date: str = dayForecast['date']
+            date = date.replace('2022-', '')
+            date = date.replace('-', '/')
+            if date[:1] == '0':
+                date = date.replace('0', '')
             weather: str = dayForecast['telop']
             weatherCode: str = dayForecast['image']['url']
             weatherCode = weatherCode.replace('https://www.jma.go.jp/bosai/forecast/img/', '')
@@ -28,6 +31,10 @@ class Weather():
                 maxTemp: str = '--'
             else:
                 maxTemp: str = dayForecast['temperature']['max']['celsius']
+            if dayForecast['temperature']['min']['celsius'] == None:
+                minTemp: str = '--'
+            else:
+                minTemp: str = dayForecast['temperature']['min']['celsius']
             chanceOfRain612: str = dayForecast['chanceOfRain']['T06_12']
             chanceOfRain1218: str = dayForecast['chanceOfRain']['T12_18']
             chanceOfRain1824: str = dayForecast['chanceOfRain']['T18_24']
@@ -37,6 +44,7 @@ class Weather():
                 'weather': weather,
                 'weatherCode': weatherCode,
                 'maxTemp': maxTemp,
+                'minTemp': minTemp,
                 'cor0612': chanceOfRain612,
                 'cor1218': chanceOfRain1218,
                 'cor1824': chanceOfRain1824,
@@ -69,4 +77,19 @@ class Weather():
         return embed, file
 
     async def create3DaysEmbed(self):
-        return
+        forecastsData = await self.fetchForecasts()
+        embed = discord.Embed(title='3日間の天気')
+        for forecast in forecastsData['forecasts']:
+            date: str = forecast['date']
+            weather: str = forecast['weather']
+            weatherCode: str = forecast['weatherCode']
+            maxTemp: str = forecast['maxTemp'] + '℃'
+            minTemp: str = forecast['minTemp'] + '℃'
+            cor0612: str = forecast['cor0612']
+            if cor0612 == '0%': cor0612 = ' 0%'
+            cor1218: str = forecast['cor1218']
+            if cor1218 == '0%': cor1218 = ' 0%'
+            cor1824: str = forecast['cor1824']
+            if cor1824 == '0%': cor1824 = ' 0%'
+            embed.add_field(name=date, value=f'```天気: {weather}\n最低気温: {minTemp}    最高気温: {maxTemp}\n降水確率\n| 6~12時|12~18時|18~24時|\n|-------|-------|-------|\n|  {cor0612}  |  {cor1218}  |  {cor1824}  |```', inline=False)
+        return embed
