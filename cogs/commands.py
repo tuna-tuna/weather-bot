@@ -11,13 +11,13 @@ class Weather(commands.Cog):
 
     @slash_command()
     async def weather(self, ctx:discord.ApplicationContext):
-        await ctx.defer(ephemeral=True)
+        await ctx.defer()
         embed, file = await weatherInst.createTodaysEmbed()
         await ctx.respond(file=file, embed=embed)
     
     @slash_command()
     async def weather3(self, ctx: discord.ApplicationContext):
-        await ctx.defer(ephemeral=True)
+        await ctx.defer()
         embed = await weatherInst.create3DaysEmbed()
         await ctx.respond(embed=embed)
 

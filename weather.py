@@ -1,5 +1,6 @@
 import discord
 import aiohttp
+from wordlist import WordList
 
 class Weather():
     def __init__(self) -> None:
@@ -56,6 +57,9 @@ class Weather():
 
     async def createTodaysEmbed(self):
         #Only For Task
+        sunnyCode = ['100', '101', '102', '110']
+        cloudyCode = ['200', '201', '202', '210', '212']
+        rainyCode = ['300', '302', '313']
         forecastsData = await self.fetchForecasts()
         embed = discord.Embed(title='今日の天気')
         weather: str = forecastsData['forecasts'][0]['weather']
@@ -69,11 +73,18 @@ class Weather():
         attachmentPath = 'attachment://' + fileName
         file = discord.File(thumbnailPath, fileName)
         embed.set_thumbnail(url=attachmentPath)
-        embed.add_field(name='天気', value=weather, inline=False)
-        embed.add_field(name='最高気温', value=maxTemp, inline=False)
-        embed.add_field(name='降水確率\n6時~12時', value=cor0612, inline=True)
+        embed.add_field(name='```天気```', value=weather, inline=False)
+        embed.add_field(name='```最高気温```', value=maxTemp, inline=False)
+        embed.add_field(name='```降水確率```\n6時~12時', value=cor0612, inline=True)
         embed.add_field(name='----------\n12時~18時', value=cor1218, inline=True)
         embed.add_field(name='----------\n18時~24時', value=cor1824, inline=True)
+        if weatherCode in sunnyCode:
+            weatherStr = await WordList.getRandomMessage('Sunny', weather)
+        elif weatherCode in cloudyCode:
+            weatherStr = await WordList.getRandomMessage('Cloudy', weather)
+        elif weatherCode in rainyCode:
+            weatherStr = await WordList.getRandomMessage('Rainy', weather)
+        embed.add_field(name='```今日のひとこと```', value=f'{weatherStr}')
         return embed, file
 
     async def create3DaysEmbed(self):
